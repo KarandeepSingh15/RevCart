@@ -16,6 +16,11 @@ spring:
           uri: http://localhost:8082
           predicates:
             - Path=/products/**
+              
+        - id: inventory-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/inventory/**
 jwt:
   secret: ${JWT_SECRET}
 
