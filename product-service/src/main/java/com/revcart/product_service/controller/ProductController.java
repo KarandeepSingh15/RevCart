@@ -51,6 +51,11 @@ public class ProductController {
         return productService.getAllActiveProducts();
     }
 
+    @GetMapping("/{productId}")
+    public ProductResponse getProduct(@RequestHeader(HEADER_USER_ID) Long userId, @PathVariable Long productId) {
+        return productService.getProductById(productId);
+    }
+
     @GetMapping("/my-products")
     public List<ProductResponse>
     getMyProducts(@RequestHeader(HEADER_USER_ID) Long sellerId) {
