@@ -1,0 +1,6 @@
+com\revcart\common_outbox\publisher\OutboxPublisher.class
+com\revcart\common_outbox\repository\OutboxRepository.class
+com\revcart\common_outbox\enums\OutboxStatus.class
+com\revcart\common_outbox\entity\OutboxEvent.class
+com\revcart\common_outbox\service\OutboxService.class
+com\revcart\common_outbox\entity\OutboxEvent$OutboxEventBuilder.class
