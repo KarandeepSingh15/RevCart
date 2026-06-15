@@ -1,0 +1,10 @@
+com\revcart\common_events\events\PaymentSucceededEvent.class
+com\revcart\common_events\interfaces\SagaMessage.class
+com\revcart\common_events\payload\OrderItemPayload.class
+com\revcart\common_events\events\InventoryCommittedEvent.class
+com\revcart\common_events\events\InventoryReservedEvent.class
+com\revcart\common_events\events\InventoryReservationFailedEvent.class
+com\revcart\common_events\constants\KafkaTopics.class
+com\revcart\common_events\events\PaymentFailedEvent.class
+com\revcart\common_events\commands\ReserveInventoryCommand.class
+com\revcart\common_events\events\InventoryReleasedEvent.class
