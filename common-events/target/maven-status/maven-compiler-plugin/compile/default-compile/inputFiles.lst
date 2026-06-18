@@ -1,5 +1,6 @@
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\commands\ReserveInventoryCommand.java
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\constants\KafkaTopics.java
+E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\entity\ProcessedMessage.java
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\events\InventoryCommittedEvent.java
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\events\InventoryReleasedEvent.java
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\events\InventoryReservationFailedEvent.java
@@ -8,3 +9,6 @@ E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\even
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\events\PaymentSucceededEvent.java
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\interfaces\SagaMessage.java
 E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\payload\OrderItemPayload.java
+E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\repository\ProcessedMessageRepository.java
+E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\service\MessageDeduplicationService.java
+E:\springboot\RevCart\common-events\src\main\java\com\revcart\common_events\util\MessageMapper.java
