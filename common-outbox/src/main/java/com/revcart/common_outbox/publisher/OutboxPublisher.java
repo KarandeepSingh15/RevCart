@@ -3,11 +3,11 @@ package com.revcart.common_outbox.publisher;
 import com.revcart.common_outbox.entity.OutboxEvent;
 import com.revcart.common_outbox.enums.OutboxStatus;
 import com.revcart.common_outbox.repository.OutboxRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,16 +19,19 @@ import java.util.concurrent.TimeUnit;
 public class OutboxPublisher {
     private final OutboxRepository outboxRepository;
     private final KafkaTemplate<String, String> kafkaTemplate;
-
+    private final TransactionTemplate transactionTemplate;
 
     public void publishPendingEvents() {
         List<OutboxEvent> pendingEvents = outboxRepository.findPendingEvents();
         for (OutboxEvent event : pendingEvents) {
-            publishEvent(event);
+            transactionTemplate.execute(status ->
+            {
+                publishEvent(event);
+                return null;
+            });
         }
     }
 
-    @Transactional
     private void publishEvent(OutboxEvent event) {
         try {
             kafkaTemplate.send(event.getDestinationTopic(), event.getAggregateId(), event.getPayload()).get(10, TimeUnit.SECONDS);
