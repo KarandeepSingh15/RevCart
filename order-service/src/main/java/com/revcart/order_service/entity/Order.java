@@ -31,4 +31,7 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
+
+    @Column
+    private String cancellationReason;
 }

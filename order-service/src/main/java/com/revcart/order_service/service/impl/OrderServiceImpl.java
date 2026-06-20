@@ -1,8 +1,11 @@
 package com.revcart.order_service.service.impl;
 
-import com.revcart.common_events.commands.ReserveInventoryCommand;
 import com.revcart.common_events.constants.KafkaTopics;
+import com.revcart.common_events.events.InventoryCommittedEvent;
+import com.revcart.common_events.events.InventoryReleasedEvent;
+import com.revcart.common_events.events.ReserveInventoryCommand;
 import com.revcart.common_events.payload.OrderItemPayload;
+import com.revcart.common_events.service.MessageDeduplicationService;
 import com.revcart.common_outbox.service.OutboxService;
 import com.revcart.order_service.dto.*;
 import com.revcart.order_service.entity.Order;
@@ -37,6 +40,7 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderItemRepository orderItemRepository;
     private final ProductClient productClient;
     private final OutboxService outboxService;
+    private final MessageDeduplicationService messageDeduplicationService;
 
 
     @Override
@@ -132,6 +136,26 @@ public class OrderServiceImpl implements IOrderService {
                     return buildOrderResponse(order, items);
                 })
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void confirmOrder(InventoryCommittedEvent event, String messageType) {
+        Order order = getOrderEntity(event.orderId());
+        order.setStatus(OrderStatus.CONFIRMED);
+        orderRepository.save(order);
+        messageDeduplicationService.markProcessed(event.sagaId(), messageType);
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(Long orderId,String reason,UUID sagaId, String messageType) {
+        Order order = getOrderEntity(orderId);
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setCancellationReason(reason);
+        orderRepository.save(order);
+        messageDeduplicationService.markProcessed(sagaId, messageType);
+
     }
 
     private void validateCustomer(

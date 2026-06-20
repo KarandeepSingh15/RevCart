@@ -1,9 +1,7 @@
 package com.revcart.inventory_service.service.impl;
 
-import com.revcart.common_events.commands.ReserveInventoryCommand;
 import com.revcart.common_events.constants.KafkaTopics;
-import com.revcart.common_events.events.InventoryReservationFailedEvent;
-import com.revcart.common_events.events.InventoryReservedEvent;
+import com.revcart.common_events.events.*;
 import com.revcart.common_events.payload.OrderItemPayload;
 import com.revcart.common_events.service.MessageDeduplicationService;
 import com.revcart.common_outbox.service.OutboxService;
@@ -100,7 +98,7 @@ public class InventoryServiceImpl
 
     @Override
     @Transactional
-    public void reserveInventory(ReserveInventoryCommand command,String messageType) {
+    public void reserveInventory(ReserveInventoryCommand command, String messageType) {
         for (OrderItemPayload item : command.items()) {
             reserveStock(item.productId(), new ReserveOrReleaseRequest(item.quantity()));
         }
@@ -111,9 +109,41 @@ public class InventoryServiceImpl
 
     @Override
     @Transactional
-    public void handleReservationFailed(ReserveInventoryCommand command, RuntimeException e,String messageType) {
+    public void handleReservationFailed(ReserveInventoryCommand command, RuntimeException e, String messageType) {
         InventoryReservationFailedEvent event = new InventoryReservationFailedEvent(command.sagaId(), command.orderId(), e.getMessage(), Instant.now());
         outboxService.saveEvent("INVENTORY", command.orderId().toString(), InventoryReservationFailedEvent.class.getSimpleName(), KafkaTopics.INVENTORY_RESPONSE_TOPIC, event);
-        messageDeduplicationService.markProcessed(command.sagaId(),messageType);
+        messageDeduplicationService.markProcessed(command.sagaId(), messageType);
+    }
+
+    @Override
+    @Transactional
+    public void commitInventory(PaymentSucceededEvent event, String messageType) {
+        for (OrderItemPayload item : event.items()) {
+
+            Optional<Inventory> inventory = repository.findByProductId(item.productId());
+            if (inventory.isPresent()) {
+                if (item.quantity() > inventory.get().getReservedQuantity()) {
+                    throw new InsufficientStockAvailabilityException("Unable to commit inventory as requested quantity is more than reserved quantity");
+                }
+                inventory.get().setReservedQuantity(inventory.get().getReservedQuantity() - item.quantity());
+                repository.save(inventory.get());
+            } else {
+                throw new InventoryRecordNotFoundException("No inventory record found for product with productId: " + item.productId());
+            }
+            InventoryCommittedEvent committedEvent = new InventoryCommittedEvent(event.sagaId(), event.orderId(), Instant.now());
+            outboxService.saveEvent("INVENTORY", event.orderId().toString(), InventoryCommittedEvent.class.getSimpleName(), KafkaTopics.INVENTORY_RESPONSE_TOPIC, committedEvent);
+            messageDeduplicationService.markProcessed(committedEvent.sagaId(), messageType);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void releaseInventory(PaymentFailedEvent event, String messageType) {
+        for (OrderItemPayload item : event.items()) {
+            releaseStock(item.productId(), new ReserveOrReleaseRequest(item.quantity()));
+        }
+        InventoryReleasedEvent releasedEvent = new InventoryReleasedEvent(event.sagaId(), event.orderId(), event.reason(), Instant.now());
+        outboxService.saveEvent("INVENTORY", event.orderId().toString(), InventoryReleasedEvent.class.getSimpleName(), KafkaTopics.INVENTORY_RESPONSE_TOPIC, releasedEvent);
+        messageDeduplicationService.markProcessed(releasedEvent.sagaId(), messageType);
     }
 }

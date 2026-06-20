@@ -1,6 +1,8 @@
 package com.revcart.inventory_service.service;
 
-import com.revcart.common_events.commands.ReserveInventoryCommand;
+import com.revcart.common_events.events.PaymentFailedEvent;
+import com.revcart.common_events.events.PaymentSucceededEvent;
+import com.revcart.common_events.events.ReserveInventoryCommand;
 import com.revcart.inventory_service.dto.InventoryResponse;
 import com.revcart.inventory_service.dto.ReserveOrReleaseRequest;
 import com.revcart.inventory_service.dto.UpsertInventoryRequest;
@@ -19,6 +21,10 @@ public interface IInventoryService {
 
     void reserveInventory(ReserveInventoryCommand command,String messageType);
 
-    void handleReservationFailed(ReserveInventoryCommand command, RuntimeException e,String messageType);
+    void handleReservationFailed(ReserveInventoryCommand command, RuntimeException e, String messageType);
+
+    void commitInventory(PaymentSucceededEvent event,String messageType);
+
+    void releaseInventory(PaymentFailedEvent event,String messageType);
 }
 
