@@ -1,13 +1,13 @@
 package com.revcart.common_events.events;
 
-import com.revcart.common_events.interfaces.SagaMessage;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.revcart.common_events.payload.OrderItemPayload;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
+@JsonTypeName("InventoryReservedEvent")
 public record InventoryReservedEvent(
         UUID sagaId,
         Long orderId,
