@@ -1,6 +1,7 @@
 package com.revcart.order_service.exception;
 
 import com.revcart.order_service.dto.ErrorResponse;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -21,6 +22,11 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<ErrorResponse> handleAccessDeniedExceptionException(Exception ex, WebRequest request) throws Exception {
         ErrorResponse errorResponse =new ErrorResponse(LocalDateTime.now(),ex.getMessage(),request.getDescription(false));
         return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+    @ExceptionHandler({ProductServiceUnavailableException.class, CallNotPermittedException.class, ValidationException.class})
+    public final ResponseEntity<ErrorResponse> handleProductServiceUnavailableException(Exception ex, WebRequest request) throws Exception {
+        ErrorResponse errorResponse =new ErrorResponse(LocalDateTime.now(),ex.getMessage(),request.getDescription(false));
+        return new ResponseEntity<ErrorResponse>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     @ExceptionHandler({OrderNotFoundException.class, ProductNotAvailableException.class})
     public final ResponseEntity<ErrorResponse> handleNotFoundException(Exception ex, WebRequest request) throws Exception {

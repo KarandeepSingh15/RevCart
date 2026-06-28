@@ -42,3 +42,26 @@ product:
   service:
     url: http://localhost:8082
 
+resilience4j:
+  retry:
+    retryAspectOrder: 2
+    instances:
+      product-service:
+        max-attempts: 3
+        wait-duration: 2s
+        ignore-exceptions:
+          - com.revcart.order_service.exception.ValidationException
+          - com.revcart.order_service.exception.ProductNotAvailableException
+  circuitbreaker:
+    circuitBreakerAspectOrder: 1
+    instances:
+      product-service:
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        ignore-exceptions:
+          - com.revcart.order_service.exception.ValidationException
+          - com.revcart.order_service.exception.ProductNotAvailableException
+

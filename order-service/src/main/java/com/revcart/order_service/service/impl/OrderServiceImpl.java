@@ -38,7 +38,7 @@ public class OrderServiceImpl implements IOrderService {
     public static final String ACTIVE = "ACTIVE";
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
-    private final ProductClient productClient;
+    private final ProductFetchService  productFetchService;
     private final OutboxService outboxService;
     private final MessageDeduplicationService messageDeduplicationService;
 
@@ -60,7 +60,7 @@ public class OrderServiceImpl implements IOrderService {
 
         for (OrderItemRequest item : request.items()) {
             try {
-                ProductResponse product = productClient.getProduct(item.productId());
+                ProductResponse product = productFetchService.getProduct(item.productId());
                 if (!product.status().equals(ACTIVE)) {
                     throw new ProductNotAvailableException(String.valueOf(item.productId()));
                 }

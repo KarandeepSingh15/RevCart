@@ -72,6 +72,20 @@ services:
     networks:
       - revcart-network
 
+  postgres-cart:
+    image: postgres:16
+    container_name: postgres-cart
+    environment:
+      POSTGRES_DB: cart_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5438:5432"
+    volumes:
+      - E:/springboot/RevCart/data/cart-data:/var/lib/postgresql/data
+    networks:
+      - revcart-network
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
