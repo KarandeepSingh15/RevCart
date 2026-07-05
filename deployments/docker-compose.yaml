@@ -177,8 +177,119 @@ services:
   redis:
     image: redis:7
     container_name: redis
+    networks:
+      - revcart-network
+
+  auth-service:
+    image: karandeepsingh15/revcart.auth-service:latest
+    container_name: auth-service
+    depends_on:
+      - postgres-auth
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      USER_TIMEZONE: Asia/Kolkata
+    networks:
+      - revcart-network
+
+  product-service:
+    image: karandeepsingh15/revcart.product-service:0.0.1-SNAPSHOT
+    container_name: product-service
+    depends_on:
+      - postgres-product
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/product_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      USER_TIMEZONE: Asia/Kolkata
+    networks:
+      - revcart-network
+
+  order-service:
+    image: karandeepsingh15/revcart.order-service:0.0.1-SNAPSHOT
+    container_name: order-service
+    depends_on:
+      - postgres-order
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/order_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
+      PRODUCT_SERVICE_URL: http://product-service:8082
+      USER_TIMEZONE: Asia/Kolkata
+    networks:
+      - revcart-network
+
+  inventory-service:
+    image: karandeepsingh15/revcart.inventory-service:0.0.1-SNAPSHOT
+    container_name: inventory-service
+    depends_on:
+      - postgres-inventory
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-inventory:5432/inventory_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
+      USER_TIMEZONE: Asia/Kolkata
+    networks:
+      - revcart-network
+
+  payment-service:
+    image: karandeepsingh15/revcart.payment-service:0.0.1-SNAPSHOT
+    container_name: payment-service
+    depends_on:
+      - postgres-payment
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-payment:5432/payment_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka-1:29092,kafka-2:29092,kafka-3:29092
+      USER_TIMEZONE: Asia/Kolkata
+    networks:
+      - revcart-network
+
+  cart-service:
+    image: karandeepsingh15/revcart.cart-service:0.0.1-SNAPSHOT
+    container_name: cart-service
+    depends_on:
+      - postgres-cart
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-cart:5432/cart_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SERVICES_PRODUCT_URL: http://product-service:8082
+      USER_TIMEZONE: Asia/Kolkata
+    networks:
+      - revcart-network
+
+  gateway:
+    image: karandeepsingh15/revcart.gateway:0.0.1-SNAPSHOT
+    container_name: gateway
+    depends_on:
+      - auth-service
+      - product-service
+      - order-service
+      - inventory-service
+      - payment-service
+      - cart-service
     ports:
-      - "6379:6379"
+      - "8080:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+      SPRING_PROFILES_ACTIVE: docker
     networks:
       - revcart-network
 

@@ -6,3 +6,4 @@
 /product-service.zip
 /payment-service.zip
 /cart-service.zip
+/deployments/.env
