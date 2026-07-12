@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: revcart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+        - name: inventory-service
+          image: karandeepsingh15/revcart.inventory-service:0.0.1-SNAPSHOT
+          ports:
+            - containerPort: 8084
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8084
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: inventory-db-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revcart-secrets
+                  key: db-password
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: kafka-bootstrap-servers
+            - name: USER_TIMEZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: user-timezone
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: revcart
+spec:
+  selector:
+    app: inventory-service
+  type: ClusterIP
+  ports:
+    - port: 8084
+      targetPort: 8084

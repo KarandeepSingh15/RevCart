@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: revcart-config
+  namespace: revcart
+data:
+  # --- Database username ---
+  db-username: "admin"
+
+  # --- Database URLs (StatefulSet pod-0 stable DNS) ---
+  auth-db-url: "jdbc:postgresql://postgres-auth-0.postgres-auth-headless:5432/auth_db"
+  product-db-url: "jdbc:postgresql://postgres-product-0.postgres-product-headless:5432/product_db"
+  order-db-url: "jdbc:postgresql://postgres-order-0.postgres-order-headless:5432/order_db"
+  inventory-db-url: "jdbc:postgresql://postgres-inventory-0.postgres-inventory-headless:5432/inventory_db"
+  payment-db-url: "jdbc:postgresql://postgres-payment-0.postgres-payment-headless:5432/payment_db"
+  cart-db-url: "jdbc:postgresql://postgres-cart-0.postgres-cart-headless:5432/cart_db"
+
+  # --- Kafka (StatefulSet pod stable DNS via headless service) ---
+  kafka-bootstrap-servers: "kafka-0.kafka-headless:29092,kafka-1.kafka-headless:29092,kafka-2.kafka-headless:29092"
+
+  # --- Inter-service URLs ---
+  product-service-url: "http://product-service:8082"
+
+  # --- Misc ---
+  jwt-expiration: "86400000"
+  user-timezone: "Asia/Kolkata"

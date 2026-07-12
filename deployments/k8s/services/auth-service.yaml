@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: revcart
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: karandeepsingh15/revcart.auth-service:latest
+          ports:
+            - containerPort: 8081
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            failureThreshold: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          env:
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: auth-db-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: db-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: revcart-secrets
+                  key: db-password
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: revcart-secrets
+                  key: jwt-secret
+            - name: JWT_EXPIRATION
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: jwt-expiration
+            - name: USER_TIMEZONE
+              valueFrom:
+                configMapKeyRef:
+                  name: revcart-config
+                  key: user-timezone
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: revcart
+spec:
+  selector:
+    app: auth-service
+  # ClusterIP — only accessible within the cluster (via gateway)
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
