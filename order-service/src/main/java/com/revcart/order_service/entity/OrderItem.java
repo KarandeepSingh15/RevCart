@@ -40,4 +40,6 @@ public class OrderItem {
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
+
+    private String productName;
 }

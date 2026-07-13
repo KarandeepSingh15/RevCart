@@ -1,0 +1,115 @@
+<mat-sidenav-container style="height: 100vh">
+
+  <!-- ── Sidebar ── -->
+  <mat-sidenav #sidenav mode="side" opened style="width: 240px">
+
+    <!-- Brand + user info -->
+    <div style="padding: 20px 16px 12px; border-bottom: 1px solid rgba(0,0,0,0.08)">
+      <div style="font-size: 20px; font-weight: 700; color: #3f51b5; letter-spacing: 1px">
+        🛒 RevCart
+      </div>
+      <div style="font-size: 12px; color: #757575; margin-top: 6px; word-break: break-all">
+        {{ userName }}
+      </div>
+      <span style="display:inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 12px;
+            font-size: 11px; font-weight: 600;
+            background: #e8eaf6; color: #3f51b5">
+        {{ authService.role }}
+      </span>
+    </div>
+
+    <!-- Nav links -->
+    <mat-nav-list style="padding-top: 8px">
+
+      <!-- Customer nav -->
+      <ng-container *ngIf="isCustomer">
+        <a mat-list-item routerLink="/customer/products" routerLinkActive="nav-item-active">
+          <mat-icon matListItemIcon>storefront</mat-icon>
+          <span matListItemTitle>Browse Products</span>
+        </a>
+        <a mat-list-item routerLink="/customer/cart" routerLinkActive="nav-item-active">
+          <mat-icon matListItemIcon>shopping_cart</mat-icon>
+          <span matListItemTitle>
+            My Cart
+            <span *ngIf="cartService.cartItemCount > 0"
+              style="margin-left:6px; background:#f44336; color:white; border-radius:10px;
+                     padding:1px 7px; font-size:11px; font-weight:700">
+              {{ cartService.cartItemCount }}
+            </span>
+          </span>
+        </a>
+        <a mat-list-item routerLink="/customer/orders" routerLinkActive="nav-item-active">
+          <mat-icon matListItemIcon>receipt_long</mat-icon>
+          <span matListItemTitle>My Orders</span>
+        </a>
+      </ng-container>
+
+      <!-- Seller nav -->
+      <ng-container *ngIf="isSeller">
+        <a mat-list-item routerLink="/seller/products" routerLinkActive="nav-item-active">
+          <mat-icon matListItemIcon>inventory_2</mat-icon>
+          <span matListItemTitle>My Products</span>
+        </a>
+      </ng-container>
+
+    </mat-nav-list>
+
+    <!-- Logout pinned to bottom -->
+    <div style="position: absolute; bottom: 0; left: 0; right: 0; border-top: 1px solid rgba(0,0,0,0.08)">
+      <mat-nav-list>
+        <a mat-list-item (click)="logout()" style="cursor: pointer">
+          <mat-icon matListItemIcon style="color: #f44336">logout</mat-icon>
+          <span matListItemTitle style="color: #f44336; font-weight: 500">Logout</span>
+        </a>
+      </mat-nav-list>
+    </div>
+
+  </mat-sidenav>
+
+  <!-- ── Main content ── -->
+  <mat-sidenav-content>
+
+    <!-- Top toolbar -->
+    <mat-toolbar color="primary" style="position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 6px rgba(0,0,0,0.2)">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <span style="font-size: 18px; font-weight: 700; letter-spacing: 1px; margin-left: 4px">
+        RevCart
+      </span>
+      <span style="flex: 1 1 auto"></span>
+
+      <!-- Cart icon (customers only) -->
+      <a *ngIf="isCustomer" mat-icon-button routerLink="/customer/cart"
+        style="color: white; position: relative; margin-right: 4px" aria-label="Cart">
+        <mat-icon>shopping_cart</mat-icon>
+        <span *ngIf="cartService.cartItemCount > 0"
+          style="position:absolute; top:4px; right:4px; background:#f44336; color:white;
+                 border-radius:50%; width:16px; height:16px; font-size:10px; font-weight:700;
+                 display:flex; align-items:center; justify-content:center; line-height:1">
+          {{ cartService.cartItemCount }}
+        </span>
+      </a>
+
+      <!-- User menu -->
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" aria-label="User menu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div mat-menu-item disabled style="font-size:13px">{{ userName }}</div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon color="warn">logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
+    </mat-toolbar>
+
+    <!-- Page content -->
+    <div style="padding: 24px; max-width: 1280px; margin: 0 auto">
+      <router-outlet></router-outlet>
+    </div>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

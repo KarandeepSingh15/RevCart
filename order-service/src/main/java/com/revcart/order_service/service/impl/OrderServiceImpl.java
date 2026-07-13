@@ -21,6 +21,7 @@ import com.revcart.order_service.service.IOrderService;
 import feign.FeignException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -71,6 +72,7 @@ public class OrderServiceImpl implements IOrderService {
                         .quantity(item.quantity())
                         .unitPrice(product.price())
                         .totalPrice(itemTotal)
+                        .productName(product.name())
                         .build();
                 orderItems.add(orderItem);
                 totalAmount = totalAmount.add(itemTotal);
@@ -98,14 +100,16 @@ public class OrderServiceImpl implements IOrderService {
                         item.getProductId(),
                         item.getQuantity(),
                         item.getUnitPrice(),
-                        item.getTotalPrice()))
+                        item.getTotalPrice(),
+                        item.getProductName()))
                 .toList();
         return new OrderResponse(
                 savedOrder.getId(),
                 savedOrder.getCustomerId(),
                 savedOrder.getTotalAmount(),
                 savedOrder.getStatus(),
-                responses
+                responses,
+                savedOrder.getStatus().equals(OrderStatus.CANCELLED)? savedOrder.getCancellationReason() : null
         );
     }
 
@@ -127,15 +131,14 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
-    public List<OrderResponse> getMyOrders(Long customerId) {
-        return orderRepository.findByCustomerId(customerId)
-                .stream()
-                .map(order -> {
-                    List<OrderItem> items = orderItemRepository
-                            .findByOrderId(order.getId());
+    public PageResponse<OrderResponse> getMyOrders(Long customerId, Pageable pageable) {
+        return PageResponse.from(
+                orderRepository.findByCustomerId(customerId, pageable),
+                order -> {
+                    List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
                     return buildOrderResponse(order, items);
-                })
-                .toList();
+                }
+        );
     }
 
     @Override

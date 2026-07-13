@@ -1,12 +1,16 @@
 package com.revcart.product_service.controller;
 
 import com.revcart.product_service.dto.CreateProductRequest;
+import com.revcart.product_service.dto.PageResponse;
 import com.revcart.product_service.dto.ProductResponse;
 import com.revcart.product_service.dto.UpdateProductRequest;
 import com.revcart.product_service.dto.UpdateProductStatusRequest;
 import com.revcart.product_service.service.IProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,8 +51,18 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductResponse> getProducts(@RequestHeader(HEADER_USER_ID) Long userId) {
-        return productService.getAllActiveProducts();
+    public PageResponse<ProductResponse> getProducts(
+            @RequestHeader(HEADER_USER_ID) Long userId,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return productService.getAllActiveProducts(pageable);
     }
 
     @GetMapping("/{productId}")
@@ -57,8 +71,17 @@ public class ProductController {
     }
 
     @GetMapping("/my-products")
-    public List<ProductResponse>
-    getMyProducts(@RequestHeader(HEADER_USER_ID) Long sellerId) {
-        return productService.getSellerProducts(sellerId);
+    public PageResponse<ProductResponse> getMyProducts(
+            @RequestHeader(HEADER_USER_ID) Long sellerId,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return productService.getSellerProducts(sellerId, pageable);
     }
 }

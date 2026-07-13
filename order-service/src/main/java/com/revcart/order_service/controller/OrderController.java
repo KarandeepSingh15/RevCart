@@ -2,9 +2,13 @@ package com.revcart.order_service.controller;
 
 import com.revcart.order_service.dto.CreateOrderRequest;
 import com.revcart.order_service.dto.OrderResponse;
+import com.revcart.order_service.dto.PageResponse;
 import com.revcart.order_service.service.IOrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,8 +37,17 @@ public class OrderController {
     }
 
     @GetMapping("/my-orders")
-    public List<OrderResponse>
-    getMyOrders(@RequestHeader("X-User-Id") Long customerId) {
-        return service.getMyOrders(customerId);
+    public PageResponse<OrderResponse> getMyOrders(
+            @RequestHeader("X-User-Id") Long customerId,
+            @RequestParam(defaultValue = "0")    int page,
+            @RequestParam(defaultValue = "10")   int size,
+            @RequestParam(defaultValue = "id")   String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return service.getMyOrders(customerId, pageable);
     }
 }

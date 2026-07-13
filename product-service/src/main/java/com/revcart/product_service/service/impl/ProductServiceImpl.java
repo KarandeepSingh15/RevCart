@@ -1,6 +1,7 @@
 package com.revcart.product_service.service.impl;
 
 import com.revcart.product_service.dto.CreateProductRequest;
+import com.revcart.product_service.dto.PageResponse;
 import com.revcart.product_service.dto.ProductResponse;
 import com.revcart.product_service.dto.UpdateProductRequest;
 import com.revcart.product_service.dto.UpdateProductStatusRequest;
@@ -13,6 +14,7 @@ import com.revcart.product_service.exception.ProductNotFoundException;
 import com.revcart.product_service.repository.ProductRepository;
 import com.revcart.product_service.service.IProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -80,8 +82,11 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllActiveProducts() {
-        return productRepository.findByStatus(ProductStatus.ACTIVE).stream().map(ProductServiceImpl::mapProductToProductResponse).toList();
+    public PageResponse<ProductResponse> getAllActiveProducts(Pageable pageable) {
+        return PageResponse.from(
+                productRepository.findByStatus(ProductStatus.ACTIVE, pageable),
+                ProductServiceImpl::mapProductToProductResponse
+        );
     }
 
     @Override
@@ -90,8 +95,11 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Override
-    public List<ProductResponse> getSellerProducts(Long sellerId) {
-        return productRepository.findBySellerId(sellerId).stream().map(ProductServiceImpl::mapProductToProductResponse).toList();
+    public PageResponse<ProductResponse> getSellerProducts(Long sellerId, Pageable pageable) {
+        return PageResponse.from(
+                productRepository.findBySellerId(sellerId, pageable),
+                ProductServiceImpl::mapProductToProductResponse
+        );
     }
 
     private static ProductResponse mapProductToProductResponse(Product product) {

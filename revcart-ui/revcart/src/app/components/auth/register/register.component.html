@@ -1,0 +1,67 @@
+<div class="auth-container">
+  <mat-card class="auth-card">
+    <div class="auth-logo">🛒</div>
+    <mat-card-header>
+      <mat-card-title>Create Account</mat-card-title>
+      <mat-card-subtitle>Join RevCart today</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex-col mt-16">
+
+        <!-- Role selector -->
+        <mat-button-toggle-group formControlName="role" class="full-width mb-16" style="justify-content:center">
+          <mat-button-toggle value="CUSTOMER" style="flex:1">
+            <mat-icon>shopping_cart</mat-icon> Customer
+          </mat-button-toggle>
+          <mat-button-toggle value="SELLER" style="flex:1">
+            <mat-icon>storefront</mat-icon> Seller
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+          <mat-form-field appearance="outline">
+            <mat-label>First Name</mat-label>
+            <input matInput formControlName="firstName">
+            <mat-error>Required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Last Name</mat-label>
+            <input matInput formControlName="lastName">
+            <mat-error>Required</mat-error>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email" placeholder="you@example.com" autocomplete="email">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="form.get('email')?.hasError('required')">Email is required</mat-error>
+          <mat-error *ngIf="form.get('email')?.hasError('email')">Enter a valid email</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="new-password">
+          <mat-icon matPrefix>lock</mat-icon>
+          <button mat-icon-button matSuffix type="button" (click)="hidePassword = !hidePassword">
+            <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint>At least 6 characters</mat-hint>
+          <mat-error *ngIf="form.get('password')?.hasError('minlength')">Min 6 characters</mat-error>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading" class="full-width mt-16">
+          <mat-spinner diameter="20" *ngIf="loading" style="display:inline-block; margin-right:8px"></mat-spinner>
+          {{ loading ? 'Creating account...' : 'Create Account' }}
+        </button>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions style="display:flex; justify-content:center; align-items:center; padding: 8px 16px">
+      <span style="color:#666; font-size:14px">Already have an account?</span>
+      <a mat-button color="primary" routerLink="/login">Sign In</a>
+    </mat-card-actions>
+  </mat-card>
+</div>
