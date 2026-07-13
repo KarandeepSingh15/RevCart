@@ -1,5 +1,4 @@
 export const environment = {
   production: true,
-  // Point to your gateway — update this for production deployment
-  apiUrl: 'http://localhost:8080'
+  apiUrl: 'http://revcart.com/api'
 };

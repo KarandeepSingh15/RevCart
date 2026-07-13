@@ -1,13 +1,39 @@
+# ── Ingress: API Gateway ──────────────────────────────────────────────────────
+# Routes revcart.com/api/* → gateway, stripping the /api prefix.
+# e.g. revcart.com/api/auth/login  →  gateway:8080/auth/login
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: revcart-ingress
+  name: revcart-api-ingress
   namespace: revcart
   annotations:
-    # Rewrite rules — strip the matched prefix before forwarding to the gateway.
-    # The gateway itself handles routing to downstream services, so we pass
-    # the path through as-is (no rewrite needed).
     nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: revcart.com
+      http:
+        paths:
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 8080
+---
+# ── Ingress: Angular SPA ──────────────────────────────────────────────────────
+# Routes all other traffic to the Angular frontend.
+# No rewrite — paths are passed through as-is so Angular's router handles them.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: revcart-ui-ingress
+  namespace: revcart
+  annotations:
     nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
 spec:
@@ -20,6 +46,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: gateway
+                name: revcart-ui
                 port:
-                  number: 8080
+                  number: 80

@@ -41,7 +41,7 @@ echo ">> [4/6] Applying application services..."
 kubectl apply -f "$SCRIPT_DIR/services/"
 
 echo ">> Waiting for application deployments..."
-for svc in auth-service product-service order-service inventory-service payment-service cart-service gateway; do
+for svc in auth-service product-service order-service inventory-service payment-service cart-service gateway revcart-ui; do
   echo "   waiting for $svc..."
   kubectl rollout status deployment/$svc -n revcart --timeout=120s
 done
@@ -53,11 +53,12 @@ echo ">> [6/6] Applying Ingress..."
 kubectl apply -f "$SCRIPT_DIR/ingress.yaml"
 
 echo ""
-echo "╔══════════════════════════════════════════╗"
-echo "║         RevCart is up and running!       ║"
-echo "╠══════════════════════════════════════════╣"
-echo "║  Ingress : http://revcart.com            ║"
-echo "╚══════════════════════════════════════════╝"
+echo "╔══════════════════════════════════════════════════════╗"
+echo "║           RevCart is up and running!                 ║"
+echo "╠══════════════════════════════════════════════════════╣"
+echo "║  Angular UI : http://revcart.com                     ║"
+echo "║  API Gateway: http://revcart.com/api/<service-path>  ║"
+echo "╚══════════════════════════════════════════════════════╝"
 echo ""
 echo ">> To get the Ingress external IP:"
 echo "   kubectl get ingress revcart-ingress -n revcart"
